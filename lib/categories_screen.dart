@@ -17,14 +17,15 @@ class CategoriesScreen extends StatefulWidget {
 
 class CategoriesScreenState extends State<CategoriesScreen> {
 
-  late CategoryForm _categoryForm;
+  Category? _selectedCategory;
   late Future<List<Category>> _categories;
+  late Future<String> _violation;
 
   @override
   void initState() {
     super.initState();
-    _categoryForm = CategoryForm(onSuccess: _refreshCategoryList, key: const Key('blank'));
     _categories = widget.viewModel.fetch();
+    _violation = Future.value("");
   }
 
   @override
@@ -38,8 +39,16 @@ class CategoriesScreenState extends State<CategoriesScreen> {
             constraints: const BoxConstraints(maxWidth: 800),
             child: Column(
               children: [
-                _categoryForm,
-                _buildCategoryList()
+                CategoryForm(
+                  category: _selectedCategory,
+                  onSubmit: _submitForm,
+                  violation: _violation,
+                ),
+                CategoryList(
+                  categories: _categories,
+                  onSelect: _selectCategory,
+                  selectedCategory: _selectedCategory,
+                )
               ],
             )
         ),
@@ -47,10 +56,52 @@ class CategoriesScreenState extends State<CategoriesScreen> {
     );
   }
 
+  void _selectCategory(Category? category) {
+    setState(() {
+      _selectedCategory = category;
+    });
+  }
 
-  Widget _buildCategoryList() {
+  void _submitForm(int? id, String name) {
+    setState(() {
+      _violation = widget.viewModel.save(id, name);
+    });
+  }
+
+  void _reloadCategories() {
+    setState(() {
+      _categories = widget.viewModel.fetch();
+      _selectedCategory = null;
+    });
+  }
+}
+
+class CategoryList extends StatefulWidget {
+
+  final Future<List<Category>> categories;
+  final Function(Category?) onSelect;
+  final Category? selectedCategory;
+
+  const CategoryList({super.key, required this.categories, required this.onSelect, this.selectedCategory});
+
+  @override
+  State<StatefulWidget> createState() => _CategoryListState();
+}
+
+class _CategoryListState extends State<CategoryList> {
+
+  Category? _selectedCategory;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedCategory = widget.selectedCategory;
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return FutureBuilder(
-      future: _categories,
+      future: widget.categories,
       builder: (BuildContext ctx, AsyncSnapshot<List<Category>> snapshot) {
         if (snapshot.connectionState == ConnectionState.done && snapshot.hasError) {
           return Center(
@@ -83,34 +134,28 @@ class CategoriesScreenState extends State<CategoriesScreen> {
           title: Text(category.name),
           leading: const Icon(Icons.folder),
           onTap: () => { _selectCategory(category) },
+          selected: category == _selectedCategory,
         )).toList()
     );
   }
 
   void _selectCategory(Category category) {
     setState(() {
-      _categoryForm = CategoryForm(
-        key: Key(category.name),
-        onSuccess: _refreshCategoryList,
-        category: category,
-      );
-    });
-  }
-
-  void _refreshCategoryList() {
-    setState(() {
-      _categories = widget.viewModel.fetch();
+      _selectedCategory = category != _selectedCategory
+          ? category
+          : null;
+      widget.onSelect(_selectedCategory);
     });
   }
 }
 
 class CategoryForm extends StatefulWidget {
 
-  final viewModel = CategoriesViewModel('http://localhost:8080');
-  final Function() onSuccess;
   final Category? category;
+  final Function(int?, String) onSubmit;
+  final Future<String> violation;
 
-  CategoryForm({super.key, required this.onSuccess, this.category});
+  const CategoryForm({super.key, this.category, required this.onSubmit, required this.violation});
 
   @override
   State<StatefulWidget> createState() {
@@ -120,72 +165,47 @@ class CategoryForm extends StatefulWidget {
 
 class _CategoryFormState extends State<CategoryForm> {
 
-  final TextEditingController _nameController = TextEditingController();
-  late Future<String> _violation;
-
-  @override
-  void initState() {
-    super.initState();
-    _nameController.text = widget.category?.name ?? 'none';
-    _violation = Future.value('');
-  }
-
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-        future: _violation,
-        builder: (BuildContext ctx, AsyncSnapshot<String?> snapshot) {
-          String? error;
-
-          if (snapshot.connectionState == ConnectionState.done && snapshot.hasData) {
-
-            error = snapshot.requireData != '' ? snapshot.requireData : null;
-
-            return _buildForm(true, error);
-          }
-
-          return _buildForm(false, null);
+      future: widget.violation,
+      builder: (BuildContext ctx, AsyncSnapshot<String> snapshot) {
+        if (snapshot.connectionState == ConnectionState.done && snapshot.hasData) {
+          return _buildForm(snapshot.requireData, true);
         }
+
+        return _buildForm("", false);
+      },
     );
   }
 
-  Widget _buildForm(bool enabled, String? error) {
+  Widget _buildForm(String violation, bool enabled) {
+    var controller = TextEditingController(text: widget.category?.name);
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 5),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           TextFormField(
-            controller: _nameController,
+            controller: controller,
             enabled: enabled,
-//                  onChanged: _clearSelectedCategoryIdIfEmpty,
             decoration: InputDecoration(
               constraints: const BoxConstraints(maxWidth: 300, maxHeight: 100),
               labelText: 'Name',
+              errorText: violation == "" ? null : violation,
               border: const OutlineInputBorder(),
-              errorText: error,
             ),
           ),
           Container(
             alignment: Alignment.centerRight,
             child: TextButton(
-              onPressed: enabled ? _saveCategory : null,
+              onPressed: enabled ? () => widget.onSubmit(widget.category?.id, controller.text) : null,
               child: const Text('Save'),
             ),
           )
         ],
       ),
     );
-  }
-
-  void _saveCategory() {
-    String name = _nameController.text;
-
-    if (name != '') {
-      setState(() {
-        _violation = widget.viewModel.save(null, name);
-      });
-      widget.onSuccess();
-    }
   }
 }
