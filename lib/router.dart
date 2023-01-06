@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:smtm_client/budget.dart';
-import 'package:smtm_client/categories_screen.dart';
+import 'package:smtm_client/categories/categories_screen.dart';
 import 'package:smtm_client/dashboard_screen.dart';
 import 'package:smtm_client/no_animation_material_page_route.dart';
 import 'package:smtm_client/not_found_screen.dart';
@@ -36,7 +36,7 @@ class SmtmRouter {
       case wallets:
         return NoAnimationMaterialPageRoute(builder: (_) => const WalletsScreen(), settings: settings);
       case categories:
-        return NoAnimationMaterialPageRoute(builder: (_) => CategoriesScreen(), settings: settings);
+        return NoAnimationMaterialPageRoute(builder: (_) => CategoriesCreatorScreen(), settings: settings);
       default:
         return NoAnimationMaterialPageRoute(builder: (_) => const NotFoundScreen(), settings: settings);
     }
