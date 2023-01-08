@@ -42,56 +42,49 @@ class _CategoriesCreatorScreenState extends State<CategoriesCreatorScreen> {
   }
 
   Widget _buildSavingCategoryScreen(CategoriesCreator categoriesCreator) {
-    return _buildScreen(_buildForm(false, categoriesCreator.lastViolation),
-        _buildList(categoriesCreator.categories));
+    return CategoriesCreatorWidget(
+      form: CategoryForm(
+        enabled: false,
+        violation: categoriesCreator.lastViolation,
+        onSubmit: (name) => _submitForm(name, categoriesCreator.categories),
+        initialValue:
+            _selectedCategory?.name ?? categoriesCreator.lastCategoryName,
+      ),
+      list: CategoryList(
+        categories: categoriesCreator.categories,
+        selectedCategory: _selectedCategory,
+        onSelect: _switchSelectedCategory,
+      ),
+    );
   }
 
   Widget _buildSavingFinishedScreen(CategoriesCreator categoriesCreator) {
-    return _buildScreen(_buildForm(true, categoriesCreator.lastViolation),
-        _buildList(categoriesCreator.categories));
+    return CategoriesCreatorWidget(
+      form: CategoryForm(
+        enabled: true,
+        violation: categoriesCreator.lastViolation,
+        onSubmit: (name) => _submitForm(name, categoriesCreator.categories),
+        initialValue:
+            _selectedCategory?.name ?? categoriesCreator.lastCategoryName,
+      ),
+      list: CategoryList(
+        categories: categoriesCreator.categories,
+        selectedCategory: _selectedCategory,
+        onSelect: _switchSelectedCategory,
+      ),
+    );
   }
 
   Widget _buildFirstLoadScreen() {
-    return _buildScreen(_buildForm(false, ""), _buildLoadingList());
-  }
-
-  Widget _buildForm(bool enabled, String violation) {
-    return CategoryForm(
-      enabled: enabled,
-      violation: violation,
-      onSubmit: _submitForm,
-      initialValue: _selectedCategory?.name ?? "",
-    );
-  }
-
-  Widget _buildList(List<Category> categories) {
-    return CategoryList(
-      categories: categories,
-      selectedCategory: _selectedCategory,
-      onSelect: _switchSelectedCategory,
-    );
-  }
-
-  Widget _buildLoadingList() {
-    return const Center(
-      child: CircularProgressIndicator(),
-    );
-  }
-
-  Widget _buildScreen(Widget formWidget, Widget listWidget) {
-    return Screen(
-      title: 'Categories',
-      selectedRoute: SmtmRouter.categories,
-      content: Align(
-        alignment: Alignment.topCenter,
-        child: Container(
-            constraints: const BoxConstraints(maxWidth: 800),
-            child: Column(
-              children: [
-                formWidget,
-                listWidget,
-              ],
-            )),
+    return CategoriesCreatorWidget(
+      form: CategoryForm(
+        enabled: false,
+        violation: "",
+        onSubmit: (name) => _submitForm(name, []),
+        initialValue: "",
+      ),
+      list: const Center(
+        child: CircularProgressIndicator(),
       ),
     );
   }
@@ -102,17 +95,46 @@ class _CategoriesCreatorScreenState extends State<CategoriesCreatorScreen> {
     });
   }
 
-  void _submitForm(String categoryName) {
+  void _submitForm(String categoryName, List<Category> categories) {
     setState(() {
-
+      _categoriesCreator = widget.viewModel
+          .store(_selectedCategory?.id, categoryName, categories);
+      _selectedCategory = _selectedCategory != null ? Category(_selectedCategory!.id, categoryName) : null;
     });
+  }
+}
+
+class CategoriesCreatorWidget extends StatelessWidget {
+  final CategoryForm form;
+  final Widget list;
+
+  const CategoriesCreatorWidget(
+      {super.key, required this.form, required this.list});
+
+  @override
+  Widget build(BuildContext context) {
+    return Screen(
+      title: 'Categories',
+      selectedRoute: SmtmRouter.categories,
+      content: Align(
+        alignment: Alignment.topCenter,
+        child: Container(
+            constraints: const BoxConstraints(maxWidth: 800),
+            child: Column(
+              children: [
+                form,
+                list,
+              ],
+            )),
+      ),
+    );
   }
 }
 
 extension CategoriesCreatorAsyncState on AsyncSnapshot<CategoriesCreator> {
   bool isLoadingAfterSubmit() {
     return hasData &&
-        [ConnectionState.waiting, ConnectionState.active, ConnectionState]
+        [ConnectionState.waiting, ConnectionState.active]
             .contains(connectionState);
   }
 

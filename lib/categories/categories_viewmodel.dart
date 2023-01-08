@@ -10,13 +10,14 @@ class CategoriesViewModel {
     return CategoriesCreator.justFetched(categories);
   }
 
-  Future<CategoriesCreator> store(int? id, String name) async {
+  Future<CategoriesCreator> store(
+      int? id, String name, List<Category> categories) async {
     var violation = await save(id, name);
     if (violation == "") {
       var categories = await getCategories(_apiRoot);
-      return CategoriesCreator.justFetched(categories);
+      return CategoriesCreator.stored(categories);
     } else {
-      return CategoriesCreator.savingError(violation, []);
+      return CategoriesCreator.savingError(violation, name, categories);
     }
   }
 
@@ -39,16 +40,21 @@ class CategoriesViewModel {
 
 class CategoriesCreator {
   final String lastViolation;
+  final String lastCategoryName;
   final List<Category> categories;
 
-  CategoriesCreator(this.lastViolation, this.categories);
+  CategoriesCreator(this.lastViolation, this.lastCategoryName, this.categories);
 
   static CategoriesCreator justFetched(List<Category> categories) {
-    return CategoriesCreator("", categories);
+    return CategoriesCreator("", "", categories);
   }
 
   static CategoriesCreator savingError(
-      String violation, List<Category> categories) {
-    return CategoriesCreator(violation, categories);
+      String violation, String categoryName, List<Category> categories) {
+    return CategoriesCreator(violation, categoryName, categories);
+  }
+
+  static CategoriesCreator stored(List<Category> categories) {
+    return CategoriesCreator("", "", categories);
   }
 }
