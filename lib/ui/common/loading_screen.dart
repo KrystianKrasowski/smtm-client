@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:smtm_client/screen.dart';
+import 'package:smtm_client/ui/common/screen.dart';
 
 class LoadingScreen extends StatelessWidget {
 

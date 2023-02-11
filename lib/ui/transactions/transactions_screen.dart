@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:smtm_client/router.dart';
-import 'package:smtm_client/screen.dart';
+import 'package:smtm_client/ui/common/screen.dart';
 
 class TransactionsScreen extends StatelessWidget {
 

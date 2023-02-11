@@ -6,8 +6,14 @@ import 'package:smtm_client/api/root_api.dart';
 class Category {
   final int id;
   final String name;
+  final Uri endpoint;
 
-  Category(this.id, this.name);
+  static Category fromJson(dynamic json) {
+    return Category(
+        json["id"], json["name"], Uri.parse(json["_links"]["self"]["href"]));
+  }
+
+  Category(this.id, this.name, this.endpoint);
 
   @override
   bool operator ==(Object other) =>
@@ -21,12 +27,6 @@ class Category {
   int get hashCode => id.hashCode ^ name.hashCode;
 }
 
-final List<Category> _categories = [
-  Category(1, 'Rent'),
-  Category(2, 'Savings'),
-  Category(3, 'House services')
-];
-
 Future<List<Category>> getCategories(String apiUrl) async {
   var endpoint = await getCategoriesEndpoint(apiUrl);
   var response = await http.get(endpoint,
@@ -39,28 +39,45 @@ Future<List<Category>> getCategories(String apiUrl) async {
   Map<String, dynamic> decodedResponse = jsonDecode(response.body);
   List<dynamic> categories = decodedResponse["_embedded"]["categories"];
 
-  return categories
-      .map((e) => Category(e["id"], e["name"]))
-      .toList();
+  return categories.map((e) => Category.fromJson(e)).toList();
 }
 
-Future<String> putCategory(Category category) {
-  Category existing =
-      _categories.firstWhere((element) => element.id == category.id);
-  int i = _categories.indexOf(existing);
-  _categories[i] = category;
-  return Future.delayed(const Duration(seconds: 1), () => '');
+Future<String> putCategory(Category category) async {
+  var response = await http.put(category.endpoint, headers: {
+    "Content-Type": "application/smtm.category.v1+json",
+    "Accept": "application/smtm.constraint-violation.v1+json"
+  });
+
+  var expectedStatusCodes = [204, 422];
+
+  if (!expectedStatusCodes.contains(response.statusCode)) {
+    throw UnexpectedHttpStatus(response.statusCode);
+  }
+
+  return _extractViolation(response) ?? "";
 }
 
-Future<String> postCategory(String name) {
-  int id = _categories.length + 1;
-  // _categories.add(Category(id, name));
-  return Future.delayed(
-      const Duration(seconds: 1), () => 'Something went wrong');
+Future<String> postCategory(String apiUri, String name) async {
+  var endpoint = await getCategoriesEndpoint(apiUri);
+  var response = await http.post(endpoint, headers: {
+    "Content-Type": "application/smtm.category.v1+json",
+    "Accept": "application/smtm.constraint-violation.v1+json"
+  });
+
+  var expectedStatusCodes = [201, 422];
+
+  if (!expectedStatusCodes.contains(response.statusCode)) {
+    throw UnexpectedHttpStatus(response.statusCode);
+  }
+
+  return _extractViolation(response) ?? "";
 }
 
-void deleteCategory(int id) {
-  Category existing = _categories.firstWhere((element) => element.id == id);
-  int i = _categories.indexOf(existing);
-  _categories.removeAt(i);
+String? _extractViolation(http.Response response) {
+  if (response.statusCode == 422) {
+    Map<String, dynamic> decodedResponse = jsonDecode(response.body);
+    return decodedResponse["violations"]["name"]["message"] as String;
+  }
+
+  return null;
 }

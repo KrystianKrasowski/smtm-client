@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:smtm_client/navigation_desktop.dart';
+import 'package:smtm_client/ui/common/navigation_desktop.dart';
 
 class Screen extends StatelessWidget {
   final String title;
