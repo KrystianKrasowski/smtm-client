@@ -3,8 +3,10 @@ import 'package:smtm_client/router.dart';
 
 class NavigationDesktop extends StatefulWidget {
   final String selectedRoute;
+  final Widget? leading;
 
-  const NavigationDesktop({super.key, required this.selectedRoute});
+  const NavigationDesktop(
+      {super.key, required this.selectedRoute, this.leading});
 
   @override
   State<StatefulWidget> createState() => _NavigationDesktopState();
@@ -23,9 +25,11 @@ class _NavigationDesktopState extends State<NavigationDesktop> {
   Widget build(BuildContext context) {
     var primaryColor = Theme.of(context).primaryColor;
     return NavigationRail(
+      leading: widget.leading,
       destinations: const <NavigationRailDestination>[
         NavigationRailDestination(
             icon: Icon(Icons.dashboard_outlined),
+            padding: EdgeInsets.only(top: 20),
             selectedIcon: Icon(Icons.dashboard),
             label: Text('Dashboard')),
         NavigationRailDestination(
@@ -48,10 +52,7 @@ class _NavigationDesktopState extends State<NavigationDesktop> {
       selectedIndex: SmtmRouter.getRouteIndex(_selectedRoute),
       onDestinationSelected: changeDestination,
       labelType: NavigationRailLabelType.all,
-      selectedLabelTextStyle: TextStyle(
-        color: primaryColor,
-        fontSize: 12
-      ),
+      selectedLabelTextStyle: TextStyle(color: primaryColor, fontSize: 12),
       minWidth: 100,
     );
   }

@@ -1,4 +1,5 @@
 import 'package:smtm_client/domain/categories/categories_repository.dart';
+import 'package:smtm_client/domain/categories/category.dart';
 
 class CategoriesViewModel {
 
@@ -6,23 +7,11 @@ class CategoriesViewModel {
 
   CategoriesViewModel(this.repository);
 
-  Future<Categories> get() async {
-    final categoryList = await repository.getAll();
-    return Categories(categoryList);
+  Future<List<Category>> get() async {
+    return repository.getAll();
   }
-}
 
-class Categories {
-
-  final List<Category> list;
-
-  Categories(this.list);
-}
-
-class Category {
-
-  final Uri id;
-  final String name;
-
-  Category(this.id, this.name);
+  Future<SaveCategoryResult> create(String name) async {
+    return repository.create(name);
+  }
 }

@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:smtm_client/domain/categories/categories_repository.dart';
 import 'package:smtm_client/domain/categories/categories_viewmodel.dart';
+import 'package:smtm_client/domain/categories/category.dart';
 import 'package:smtm_client/router.dart';
+import 'package:smtm_client/ui/categories/category_edit_screen.dart';
 import 'package:smtm_client/ui/common/screen.dart';
 
 class CategoriesScreen extends StatefulWidget {
-
   final CategoriesViewModel viewModel;
 
   factory CategoriesScreen.of(CategoriesRepository repository) {
@@ -19,7 +20,7 @@ class CategoriesScreen extends StatefulWidget {
 }
 
 class _CategoriesScreenState extends State<CategoriesScreen> {
-  late Future<Categories> _categories;
+  late Future<List<Category>> _categories;
 
   @override
   void initState() {
@@ -32,22 +33,37 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
     return Screen(
       title: 'Categories',
       selectedRoute: SmtmRouter.categories,
-      content: FutureBuilder(
-          future: _categories,
-          builder: (context, snapshot) {
-            if (snapshot.hasFirstLoaded()) {
-              return _buildCategoryList(snapshot.requireData);
-            }
-
-            return const CircularProgressIndicator();
-          })
+      content: _buildContent(),
+      primaryAction: _buildNewCategoryButton(),
     );
   }
 
-  Widget _buildCategoryList(Categories categories) {
-    return ListView(
-        children: categories.list.map((e) => _buildCategoryTile(e)).toList()
+  Widget _buildContent() {
+    return FutureBuilder(
+        future: _categories,
+        builder: (context, snapshot) {
+          if (snapshot.hasFirstLoaded()) {
+            return _buildCategoryList(snapshot.requireData);
+          }
+
+          return const CircularProgressIndicator();
+        });
+  }
+
+  Widget _buildNewCategoryButton() {
+    return FloatingActionButton(
+      onPressed: () => showDialog(
+          context: context,
+          builder: (BuildContext context) => Dialog(
+                child: CategoryEditScreen(viewModel: widget.viewModel),
+              )),
+      child: const Icon(Icons.add),
     );
+  }
+
+  Widget _buildCategoryList(List<Category> categories) {
+    return ListView(
+        children: categories.map((e) => _buildCategoryTile(e)).toList());
   }
 
   Widget _buildCategoryTile(Category category) {
@@ -58,7 +74,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
   }
 }
 
-extension _CategoriesAsyncState on AsyncSnapshot<Categories> {
+extension _CategoriesAsyncState on AsyncSnapshot<List<Category>> {
 
   bool hasFirstLoaded() {
     return hasData && connectionState == ConnectionState.done;
