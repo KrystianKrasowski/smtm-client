@@ -7,5 +7,5 @@ typedef SaveCategoryResult = Either<List<ConstraintViolation>, Category>;
 abstract class CategoriesRepository {
   Future<List<Category>> getAll();
 
-  Future<SaveCategoryResult> create(String name);
+  Future<Either<ConstraintViolations, Category>> create(String name);
 }

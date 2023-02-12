@@ -16,12 +16,12 @@ class MockedCategoriesClient extends CategoriesRepository {
   }
 
   @override
-  Future<SaveCategoryResult> create(String name) async {
+  Future<Either<ConstraintViolations, Category>> create(String name) async {
     if (name.toLowerCase() == "invalid") {
-      return left([
+      return left(ConstraintViolations([
         ConstraintViolation.of(
             "name", "Invalid characters: %chars%", {"%chars%": "<, >, @, ~"})
-      ]);
+      ]));
     }
 
     final id = _repository.length + 1;

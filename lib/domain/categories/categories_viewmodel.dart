@@ -1,5 +1,7 @@
+import 'package:dartz/dartz.dart';
 import 'package:smtm_client/domain/categories/categories_repository.dart';
 import 'package:smtm_client/domain/categories/category.dart';
+import 'package:smtm_client/domain/shared/constraint_violation.dart';
 
 class CategoriesViewModel {
 
@@ -11,7 +13,7 @@ class CategoriesViewModel {
     return repository.getAll();
   }
 
-  Future<SaveCategoryResult> create(String name) async {
+  Future<Either<ConstraintViolations, Category>> create(String name) async {
     return repository.create(name);
   }
 }

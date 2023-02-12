@@ -58,10 +58,9 @@ class CategoryEditState extends State<CategoryEditScreen> {
     result.fold(_onConstraintViolation, _onSaveSuccess);
   }
 
-  void _onConstraintViolation(List<ConstraintViolation> violations) {
+  void _onConstraintViolation(ConstraintViolations violations) {
     setState(() {
-      _nameViolation =
-          violations.firstWhere((element) => element.field == 'name').message;
+      _nameViolation = violations.get('name');
     });
   }
 
