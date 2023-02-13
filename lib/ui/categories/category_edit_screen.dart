@@ -20,36 +20,39 @@ class CategoryEditState extends State<CategoryEditScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 30, bottom: 30, left: 15, right: 15),
-      child: SizedBox(
-        width: 400,
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              TextFormField(
-                controller: _controller,
-                decoration: InputDecoration(
-                    border: const OutlineInputBorder(),
-                    labelText: 'Name',
-                    errorText: _nameViolation),
-              ),
-              ButtonBar(
-                children: [
-                  OutlinedButton(
-                    onPressed: _submit,
-                    child: const Text('Submit'),
-                  )
-                ],
-              )
-            ],
-          ),
+    return AlertDialog(
+      title: Text('New category'),
+      content: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            TextFormField(
+              controller: _controller,
+              decoration: InputDecoration(
+                  border: const OutlineInputBorder(),
+                  labelText: 'Name',
+                  errorText: _nameViolation),
+            )
+          ],
         ),
       ),
+      actions: [
+        TextButton(
+          onPressed: _cancel,
+          child: const Text('Cancel'),
+        ),
+        TextButton(
+          onPressed: _submit,
+          child: const Text('Submit'),
+        )
+      ],
     );
+  }
+
+  void _cancel() {
+    Navigator.pop(context);
   }
 
   void _submit() async {

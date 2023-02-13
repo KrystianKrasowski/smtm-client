@@ -54,9 +54,8 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
     return FloatingActionButton(
       onPressed: () => showDialog(
           context: context,
-          builder: (BuildContext context) => Dialog(
-                child: CategoryEditScreen(viewModel: widget.viewModel),
-              )),
+          builder: (BuildContext context) =>
+              CategoryEditScreen(viewModel: widget.viewModel)),
       child: const Icon(Icons.add),
     );
   }
@@ -75,7 +74,6 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
 }
 
 extension _CategoriesAsyncState on AsyncSnapshot<List<Category>> {
-
   bool hasFirstLoaded() {
     return hasData && connectionState == ConnectionState.done;
   }
