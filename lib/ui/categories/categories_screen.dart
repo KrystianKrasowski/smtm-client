@@ -52,10 +52,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
 
   Widget _buildNewCategoryButton() {
     return FloatingActionButton(
-      onPressed: () => showDialog(
-          context: context,
-          builder: (BuildContext context) =>
-              CategoryEditScreen(viewModel: widget.viewModel)),
+      onPressed: () => showCategoryForm(null),
       child: const Icon(Icons.add),
     );
   }
@@ -69,6 +66,17 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
     return ListTile(
       title: Text(category.name),
       leading: const Icon(Icons.folder),
+      onTap: () => showCategoryForm(category),
+    );
+  }
+
+  Future showCategoryForm(Category? category) async {
+    return showDialog(
+      context: context,
+      builder: (BuildContext context) => CategoryEditScreen(
+        viewModel: widget.viewModel,
+        category: category,
+      )
     );
   }
 }

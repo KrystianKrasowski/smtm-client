@@ -6,8 +6,9 @@ import 'package:smtm_client/router.dart';
 
 class CategoryEditScreen extends StatefulWidget {
   final CategoriesViewModel viewModel;
+  final Category? category;
 
-  const CategoryEditScreen({super.key, required this.viewModel});
+  const CategoryEditScreen({super.key, required this.viewModel, this.category});
 
   @override
   State<StatefulWidget> createState() => CategoryEditState();
@@ -18,10 +19,17 @@ class CategoryEditState extends State<CategoryEditScreen> {
   final _controller = TextEditingController();
   String? _nameViolation;
 
+
+  @override
+  void initState() {
+    super.initState();
+    _controller.text = widget.category?.name ?? '';
+  }
+
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text('New category'),
+      title: Text(getFormTitle()),
       content: Form(
         key: _formKey,
         child: Column(
@@ -51,13 +59,17 @@ class CategoryEditState extends State<CategoryEditScreen> {
     );
   }
 
+  String getFormTitle() => widget.category != null
+      ? 'Change category'
+      : 'New category';
+
   void _cancel() {
     Navigator.pop(context);
   }
 
   void _submit() async {
     final name = _controller.text;
-    final result = await widget.viewModel.create(name);
+    final result = await widget.viewModel.save(name, widget.category?.id);
     result.fold(_onConstraintViolation, _onSaveSuccess);
   }
 

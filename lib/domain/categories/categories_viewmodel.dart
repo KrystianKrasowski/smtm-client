@@ -13,7 +13,11 @@ class CategoriesViewModel {
     return repository.getAll();
   }
 
-  Future<Either<ConstraintViolations, Category>> create(String name) async {
-    return repository.create(name);
+  Future<Either<ConstraintViolations, Category>> save(String name, Uri? id) async {
+    if (id == null) {
+      return repository.create(name);
+    } else {
+      return repository.update(Category(id, name));
+    }
   }
 }

@@ -8,4 +8,6 @@ abstract class CategoriesRepository {
   Future<List<Category>> getAll();
 
   Future<Either<ConstraintViolations, Category>> create(String name);
+
+  Future<Either<ConstraintViolations, Category>> update(Category category);
 }

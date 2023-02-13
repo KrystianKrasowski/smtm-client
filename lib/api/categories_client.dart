@@ -30,4 +30,20 @@ class MockedCategoriesClient extends CategoriesRepository {
     _repository.add(category);
     return right(category);
   }
+
+  @override
+  Future<Either<ConstraintViolations, Category>> update(Category category) async {
+    if (category.name.toLowerCase() == 'invalid') {
+      return left(ConstraintViolations([
+        ConstraintViolation.of(
+            "name", "Invalid characters: %chars%", {"%chars%": "<, >, @, ~"})
+      ]));
+    }
+
+    var index = _repository.indexWhere((element) => element.id == category.id);
+    _repository.removeAt(index);
+    _repository.add(category);
+
+    return right(category);
+  }
 }
