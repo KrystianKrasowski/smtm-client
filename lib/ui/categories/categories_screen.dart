@@ -33,21 +33,21 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
     return Screen(
       title: 'Categories',
       selectedRoute: SmtmRouter.categories,
-      content: _buildContent(),
+      content: FutureBuilder(
+        future: _categories,
+        builder: _buildContent,
+      ),
       primaryAction: _buildNewCategoryButton(),
     );
   }
 
-  Widget _buildContent() {
-    return FutureBuilder(
-        future: _categories,
-        builder: (context, snapshot) {
-          if (snapshot.hasFirstLoaded()) {
-            return _buildCategoryList(snapshot.requireData);
-          }
-
-          return const CircularProgressIndicator();
-        });
+  Widget _buildContent(
+      BuildContext context, AsyncSnapshot<List<Category>> snapshot) {
+    if (snapshot.hasFirstLoaded()) {
+      return _buildCategoryList(snapshot.requireData);
+    } else {
+      return const CircularProgressIndicator();
+    }
   }
 
   Widget _buildNewCategoryButton() {
@@ -76,7 +76,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
       builder: (BuildContext context) => CategoryEditScreen(
         viewModel: widget.viewModel,
         category: category,
-      )
+      ),
     );
   }
 }

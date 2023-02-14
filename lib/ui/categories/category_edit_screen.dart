@@ -19,7 +19,6 @@ class CategoryEditState extends State<CategoryEditScreen> {
   final _controller = TextEditingController();
   String? _nameViolation;
 
-
   @override
   void initState() {
     super.initState();
@@ -39,10 +38,11 @@ class CategoryEditState extends State<CategoryEditScreen> {
             TextFormField(
               controller: _controller,
               decoration: InputDecoration(
-                  border: const OutlineInputBorder(),
-                  labelText: 'Name',
-                  errorText: _nameViolation),
-            )
+                border: const OutlineInputBorder(),
+                labelText: 'Name',
+                errorText: _nameViolation,
+              ),
+            ),
           ],
         ),
       ),
@@ -59,9 +59,8 @@ class CategoryEditState extends State<CategoryEditScreen> {
     );
   }
 
-  String getFormTitle() => widget.category != null
-      ? 'Change category'
-      : 'New category';
+  String getFormTitle() =>
+      widget.category != null ? 'Change category' : 'New category';
 
   void _cancel() {
     Navigator.pop(context);
